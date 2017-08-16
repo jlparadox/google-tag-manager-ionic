@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Platform, Nav, Config } from 'ionic-angular';
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -20,7 +20,11 @@ import { WelcomePage } from '../pages/welcome/welcome';
 
 import { Settings } from '../providers/providers';
 
-import { TranslateService } from '@ngx-translate/core'
+import { TranslateService } from '@ngx-translate/core';
+import '../assets/js/gtm.js';
+
+declare var gtm_id: any;
+declare var gtmObject: any;
 
 @Component({
   template: `<ion-menu [content]="content">
@@ -61,7 +65,7 @@ export class MyApp {
     { title: 'Search', component: SearchPage }
   ]
 
-  constructor(private translate: TranslateService, private platform: Platform, settings: Settings, private config: Config, private statusBar: StatusBar, private splashScreen: SplashScreen) {
+  constructor(private translate: TranslateService, private platform: Platform, settings: Settings, private config: Config, private statusBar: StatusBar, private splashScreen: SplashScreen,private elementRef: ElementRef) {
     this.initTranslate();
   }
 
@@ -87,6 +91,32 @@ export class MyApp {
     this.translate.get(['BACK_BUTTON_TEXT']).subscribe(values => {
       this.config.set('ios', 'backButtonText', values.BACK_BUTTON_TEXT);
     });
+  }
+
+  initGTM() {
+    let dataLayer = [];
+    gtm_id = '[registered Google tag manager ID]';
+    let settings = this.config.set('', 'gtm_id', gtm_id);
+    let gtm_div; 
+    let gtm_frame;
+    const gtm_url = "https://www.googletagmanager.com/ns.html?id=" + gtm_id;
+
+    gtmObject.init();
+
+    var checkExist = setInterval(function() {
+      if (window.document.querySelector('ion-app')) {
+          gtm_div = document.getElementById('gtm_div'); 
+          this.createFrame(gtm_div, gtm_url);
+      }
+    }, 300);
+  }
+
+  createFrame(gtm_div, gtm_url) {
+    const el = gtm_div.nativeElement;
+      let gtm_frame = document.createElement('iframe');
+      gtm_frame.setAttribute('src', gtm_url);
+      gtm_frame.setAttribute('style', 'display:none;visibility:hidden');
+      el.appendChild(gtm_frame);
   }
 
   openPage(page) {
